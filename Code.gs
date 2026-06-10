@@ -33,23 +33,14 @@ var START_ROW     = 2;                             // Row where emails start (2 
 /**
  * Main function — sends bulk emails from the active Google Sheet.
  *
- * How it works:
- * - Checks ENABLED flag first — if false, exits immediately (nothing is sent)
- * - Reads email addresses from EMAIL_COLUMN
- * - Skips rows already marked "Sent" in column B
- * - Attaches the file specified by ATTACHMENT_ID from Google Drive
- * - Marks each sent row with "Sent" and a timestamp
- * - Stops after DAILY_LIMIT emails to stay within Gmail quota
- *
- * To pause sending:  set ENABLED = false  (save the script)
- * To resume sending: set ENABLED = true   (save the script)
+ * To pause sending:  set ENABLED = false  then save (Ctrl+S)
+ * To resume sending: set ENABLED = true   then save (Ctrl+S)
  */
 function sendBulkEmails() {
 
   // ── On/Off switch ──────────────────────────────────────────
   if (!ENABLED) {
     Logger.log("Sending is disabled. Set ENABLED = true to resume.");
-    SpreadsheetApp.getUi().alert("Sending is currently disabled.\n\nTo resume, open the script and set:\nvar ENABLED = true");
     return;
   }
   // ──────────────────────────────────────────────────────────
@@ -86,7 +77,7 @@ function sendBulkEmails() {
       sheet.getRange("B" + i).setValue("Sent");
       sheet.getRange("C" + i).setValue(new Date());
       sentCount++;
-      Utilities.sleep(1000); // 1 second delay between sends to avoid rate limiting
+      Utilities.sleep(1000); // 1 second delay between sends
     } catch(e) {
       sheet.getRange("B" + i).setValue("Error: " + e.message);
       Logger.log("Error sending to " + email + ": " + e.message);
@@ -94,7 +85,5 @@ function sendBulkEmails() {
     }
   }
 
-  var summary = "Done!\n\nSent: " + sentCount + "\nSkipped: " + skipped + "\nErrors: " + errors;
-  Logger.log(summary);
-  SpreadsheetApp.getUi().alert(summary);
+  Logger.log("Done! Sent: " + sentCount + " | Skipped: " + skipped + " | Errors: " + errors);
 }
